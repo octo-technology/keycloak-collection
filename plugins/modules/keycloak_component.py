@@ -275,8 +275,7 @@ changed:
 import requests
 import json
 import urllib
-from ansible.module_utils.keycloak_utils import *
-from __builtin__ import isinstance    
+from ansible_collections.inspq.keycloak.plugins.module_utils.keycloak_utils import *
 
 def main():
     module = AnsibleModule(

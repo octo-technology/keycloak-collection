@@ -1,0 +1,180 @@
+---
+
+- name: create a component
+  keycloak_component:
+    url: "{{ keycloak_url }}"
+    username: "{{ keycloak_admin_user }}"
+    password: "{{ keycloak_admin_password }}"
+    realm: master
+    state: present
+    name: "test"
+    parentId: "master"
+    providerId: "ldap"
+    providerType: "org.keycloak.storage.UserStorageProvider"
+    config:
+      vendor:
+      - "ad"
+      usernameLDAPAttribute: ["sAMAccountName"]
+      rdnLDAPAttribute: ["cn"]
+      uuidLDAPAttribute: ["objectGUID"]
+      userObjectClasses: ["person, organizationalPerson, user"]
+      connectionUrl: ["ldap://ldap.server.com:389"]
+      usersDn: ["OU=users,DC=ldap,DC=server,DC=com"]
+      authType: ["simple"]
+      bindDn: ["CN=toto,OU=users,DC=ldap,DC=server,DC=com"]
+      bindCredential: ["LeTresLongMotDePasse"]
+    subComponents:
+      org.keycloak.storage.ldap.mappers.LDAPStorageMapper:
+        - name: "groupMapper"
+          providerId: "group-ldap-mapper"
+          config:
+            mode: ["READ_ONLY"]
+            membership.attribute.type: ["DN"]
+            user.roles.retrieve.strategy: ["LOAD_GROUPS_BY_MEMBER_ATTRIBUTE"]
+            group.name.ldap.attribute: ["cn"]
+            membership.ldap.attribute: ["member"]
+            preserve.group.inheritance: ["true"]
+            membership.user.ldap.attribute: ["uid"]
+            group.object.classes: ["groupOfNames"]
+            groups.dn: ["cn=newgroups,OU=SEC,DC=SANTEPUBLIQUE,DC=RTSS,DC=QC,DC=CA"]
+            drop.non.existing.groups.during.sync: ["false"]
+  register: result
+
+
+- debug:
+    var: result
+
+- assert:
+    that:
+    - "result.changed"
+    - "result.ansible_facts.component.name == 'test'"
+    - "(result.ansible_facts.subComponents | selectattr('name', 'equalto', 'groupMapper'))| list | length == 1"
+
+- name: create a component (idempotency)
+  keycloak_component:
+    url: "{{ keycloak_url }}"
+    username: "{{ keycloak_admin_user }}"
+    password: "{{ keycloak_admin_password }}"
+    realm: master
+    state: present
+    name: "test"
+    parentId: "master"
+    providerId: "ldap"
+    providerType: "org.keycloak.storage.UserStorageProvider"
+    config:
+      vendor:
+      - "ad"
+      usernameLDAPAttribute: ["sAMAccountName"]
+      rdnLDAPAttribute: ["cn"]
+      uuidLDAPAttribute: ["objectGUID"]
+      userObjectClasses: ["person, organizationalPerson, user"]
+      connectionUrl: ["ldap://ldap.server.com:389"]
+      usersDn: ["OU=users,DC=ldap,DC=server,DC=com"]
+      authType: ["simple"]
+      bindDn: ["CN=toto,OU=users,DC=ldap,DC=server,DC=com"]
+      bindCredential: ["LeTresLongMotDePasse"]
+    subComponents:
+      org.keycloak.storage.ldap.mappers.LDAPStorageMapper:
+        - name: "groupMapper"
+          providerId": "group-ldap-mapper"
+          config":
+            mode: ["READ_ONLY"]
+            membership.attribute.type: ["DN"]
+            user.roles.retrieve.strategy: ["LOAD_GROUPS_BY_MEMBER_ATTRIBUTE"]
+            group.name.ldap.attribute: ["cn"]
+            membership.ldap.attribute: ["member"]
+            preserve.group.inheritance: ["true"]
+            membership.user.ldap.attribute: ["uid"]
+            group.object.classes: ["groupOfNames"]
+            groups.dn: ["cn=newgroups,OU=SEC,DC=SANTEPUBLIQUE,DC=RTSS,DC=QC,DC=CA"]
+            drop.non.existing.groups.during.sync: ["false"]
+  register: result
+
+- assert:
+    that:
+    - "not result.changed"
+    - "result.ansible_facts.component.name == 'test'"
+    - "(result.ansible_facts.subComponents | selectattr('name', 'equalto', 'groupMapper'))| list | length == 1"
+
+- name: modify a component
+  keycloak_component:
+    url: "{{ keycloak_url }}"
+    username: "{{ keycloak_admin_user }}"
+    password: "{{ keycloak_admin_password }}"
+    realm: master
+    state: present
+    name: "test"
+    parentId: "master"
+    providerId: "ldap"
+    providerType: "org.keycloak.storage.UserStorageProvider"
+    config:
+      vendor:
+      - "ad"
+      usernameLDAPAttribute: ["sAMAccountName"]
+      rdnLDAPAttribute: ["cn"]
+      uuidLDAPAttribute: ["objectGUID"]
+      userObjectClasses: ["person, organizationalPerson, user"]
+      connectionUrl: ["ldap://another-ldap.server.com:389"]
+      usersDn: ["OU=users,DC=ldap,DC=server,DC=com"]
+      authType: ["simple"]
+      bindDn: ["CN=toto,OU=users,DC=ldap,DC=server,DC=com"]
+      bindCredential: ["LeTresLongMotDePasse"]
+    subComponents:
+      org.keycloak.storage.ldap.mappers.LDAPStorageMapper:
+        - name: "groupMapper"
+          providerId": "group-ldap-mapper"
+          config":
+            mode: ["READ_ONLY"]
+            membership.attribute.type: ["DN"]
+            user.roles.retrieve.strategy: ["LOAD_GROUPS_BY_MEMBER_ATTRIBUTE"]
+            group.name.ldap.attribute: ["cn"]
+            membership.ldap.attribute: ["member"]
+            preserve.group.inheritance: ["true"]
+            membership.user.ldap.attribute: ["uid"]
+            group.object.classes: ["groupOfNames"]
+            groups.dn: ["cn=newgroups,OU=SEC,DC=SANTEPUBLIQUE,DC=RTSS,DC=QC,DC=CA"]
+            drop.non.existing.groups.during.sync: ["false"]
+  register: result
+
+- assert:
+    that:
+    - "result.changed"
+    - "result.ansible_facts.component.name == 'test'"
+    - "result.ansible_facts.component.config.connectionUrl.0 == 'ldap://another-ldap.server.com:389'"
+    - "(result.ansible_facts.subComponents | selectattr('name', 'equalto', 'groupMapper'))| list | length == 1"
+
+- name: delete a component
+  keycloak_component:
+    url: "{{ keycloak_url }}"
+    username: "{{ keycloak_admin_user }}"
+    password: "{{ keycloak_admin_password }}"
+    realm: master
+    state: absent
+    name: "test"
+    providerId: "ldap"
+    providerType: "org.keycloak.storage.UserStorageProvider"
+  register: result
+
+- assert:
+    that:
+    - "result.changed"
+    - "result.stdout == 'deleted'"
+
+- name: delete a component (idempotency)
+  keycloak_component:
+    url: "{{ keycloak_url }}"
+    username: "{{ keycloak_admin_user }}"
+    password: "{{ keycloak_admin_password }}"
+    realm: master
+    state: absent
+    name: "test"
+    providerId: "ldap"
+    providerType: "org.keycloak.storage.UserStorageProvider"
+  register: result
+
+- assert:
+    that:
+    - "not result.changed"
+    - "result.stdout == 'test absent'"
+
+...
