@@ -1,0 +1,243 @@
+---
+
+- name: Create an idp
+  keycloak_identity_provider:
+      url: "{{ keycloak_url }}"
+      username: "{{ keycloak_admin_user }}"
+      password: "{{ keycloak_admin_password }}"
+      realm: master
+      alias: "test"
+      providerId: "oidc"
+      displayName: "Test"
+      enabled: True
+      updateProfileFirstLoginMode: "on"
+      trustEmail: False
+      storeToken: True
+      addReadTokenRoleOnCreate: True
+      authenticateByDefault: False
+      #linkOnly: False
+      firstBrokerLoginFlowAlias: "first broker login"
+      config:
+        openIdConfigurationUrl: "http://keycloak:8080/auth/realms/master/.well-known/openid-configuration"
+        clientId: "test"
+        clientSecret: "test"
+        defaultScope: "openid email profile"
+        disableUserInfo: "false"
+        guiOrder: "1"
+      mappers:
+        - name: "test"
+          identityProviderMapper: "oidc-user-attribute-idp-mapper"
+          config:
+            claim : "test"
+            user.attribute: "lastname"
+        - name: "test2"
+          identityProviderMapper: "oidc-user-attribute-idp-mapper"
+          config:
+            claim: "test2"
+            user.attribute: "firstname"
+        - name: "test3"
+          identityProviderMapper: "oidc-role-idp-mapper"
+          config:
+            claim: "claimName"
+            claim.value: "valueThatGiveRole"
+            role: "roleName"
+      state: "present"
+      force: False
+  register: result
+
+- assert:
+    that:
+      - "result.changed"
+      - "result.rc == 0"
+      - "result.ansible_facts.idp.enabled"
+      - "result.ansible_facts.idp.alias == 'test'"
+      - "result.ansible_facts.idp.config.clientId == 'test'"
+      - "result.ansible_facts.idp.config.guiOrder == '1'"
+      - "result.ansible_facts.mappers | length == 3"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test') | list).0.identityProviderMapper == 'oidc-user-attribute-idp-mapper'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test') | list).0.config.claim == 'test'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test') | list).0.config['user.attribute'] == 'lastname'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test2') | list).0.identityProviderMapper == 'oidc-user-attribute-idp-mapper'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test2') | list).0.config.claim == 'test2'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test2') | list).0.config['user.attribute'] == 'firstname'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test3') | list).0.identityProviderMapper == 'oidc-role-idp-mapper'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test3') | list).0.config.claim == 'claimName'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test3') | list).0.config['claim.value'] == 'valueThatGiveRole'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test3') | list).0.config.role== 'roleName'"
+
+- name: Create an idp (idempotency)
+  keycloak_identity_provider:
+      url: "{{ keycloak_url }}"
+      username: "{{ keycloak_admin_user }}"
+      password: "{{ keycloak_admin_password }}"
+      realm: master
+      alias: "test"
+      providerId: "oidc"
+      displayName: "Test"
+      enabled: True
+      updateProfileFirstLoginMode: "on"
+      trustEmail: False
+      storeToken: True
+      addReadTokenRoleOnCreate: True
+      authenticateByDefault: False
+      #linkOnly: False
+      firstBrokerLoginFlowAlias: "first broker login"
+      config:
+        openIdConfigurationUrl: "http://keycloak:8080/auth/realms/master/.well-known/openid-configuration"
+        clientId: "test"
+        clientSecret: "test"
+        defaultScope: "openid email profile"
+        disableUserInfo: "false"
+        guiOrder: "1"
+      mappers:
+        - name: "test"
+          identityProviderMapper: "oidc-user-attribute-idp-mapper"
+          config:
+            claim : "test"
+            user.attribute: "lastname"
+        - name: "test2"
+          identityProviderMapper: "oidc-user-attribute-idp-mapper"
+          config:
+            claim: "test2"
+            user.attribute: "firstname"
+        - name: "test3"
+          identityProviderMapper: "oidc-role-idp-mapper"
+          config:
+            claim: "claimName"
+            claim.value: "valueThatGiveRole"
+            role: "roleName"
+      state: "present"
+      force: False
+  register: result
+
+- assert:
+    that:
+        # FIXME: idempotency fails
+        #      - "not result.changed"
+      - "result.rc == 0"
+      - "result.ansible_facts.idp.enabled"
+      - "result.ansible_facts.idp.alias == 'test'"
+      - "result.ansible_facts.idp.config.clientId == 'test'"
+      - "result.ansible_facts.idp.config.guiOrder == '1'"
+      - "result.ansible_facts.mappers | length == 3"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test') | list).0.identityProviderMapper == 'oidc-user-attribute-idp-mapper'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test') | list).0.config.claim == 'test'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test') | list).0.config['user.attribute'] == 'lastname'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test2') | list).0.identityProviderMapper == 'oidc-user-attribute-idp-mapper'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test2') | list).0.config.claim == 'test2'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test2') | list).0.config['user.attribute'] == 'firstname'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test3') | list).0.identityProviderMapper == 'oidc-role-idp-mapper'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test3') | list).0.config.claim == 'claimName'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test3') | list).0.config['claim.value'] == 'valueThatGiveRole'"
+      - "(result.ansible_facts.mappers | selectattr('name', 'equalto', 'test3') | list).0.config.role== 'roleName'"
+
+- name: Modify an idp
+  keycloak_identity_provider:
+      url: "{{ keycloak_url }}"
+      username: "{{ keycloak_admin_user }}"
+      password: "{{ keycloak_admin_password }}"
+      realm: master
+      alias: "test"
+      providerId: "oidc"
+      displayName: "Test"
+      enabled: True
+      updateProfileFirstLoginMode: "on"
+      trustEmail: False
+      storeToken: False
+      addReadTokenRoleOnCreate: True
+      authenticateByDefault: False
+      #linkOnly: False
+      firstBrokerLoginFlowAlias: "registration"
+      config:
+        openIdConfigurationUrl: "http://keycloak:8080/auth/realms/master/.well-known/openid-configuration"
+        clientId: "test"
+        clientSecret: "test"
+        defaultScope: "openid email profile"
+        disableUserInfo: "false"
+        guiOrder: "2"
+      state: "present"
+      force: False
+  register: result
+
+- assert:
+    that:
+        # FIXME: idempotency fails
+      - "result.changed"
+      - "result.rc == 0"
+      - "not result.ansible_facts.idp.storeToken"
+      - "result.ansible_facts.idp.firstBrokerLoginFlowAlias == 'registration'"
+      - "result.ansible_facts.idp.config.guiOrder == '2'"
+
+- name: Change the client secret
+  keycloak_identity_provider:
+      url: "{{ keycloak_url }}"
+      username: "{{ keycloak_admin_user }}"
+      password: "{{ keycloak_admin_password }}"
+      realm: master
+      alias: "test"
+      providerId: "oidc"
+      displayName: "Test"
+      enabled: True
+      updateProfileFirstLoginMode: "on"
+      trustEmail: False
+      storeToken: False
+      addReadTokenRoleOnCreate: True
+      authenticateByDefault: False
+      #linkOnly: False
+      firstBrokerLoginFlowAlias: "registration"
+      config:
+        openIdConfigurationUrl: "http://keycloak:8080/auth/realms/master/.well-known/openid-configuration"
+        clientId: "test"
+        clientSecret: "CeciEstMonSecret"
+        defaultScope: "openid email profile"
+        disableUserInfo: "false"
+        guiOrder: "2"
+      state: "present"
+      force: False
+  register: result
+
+- assert:
+    that:
+      - "result.changed"
+      - "result.rc == 0"
+
+- name: Delete an idp
+  keycloak_identity_provider:
+      url: "{{ keycloak_url }}"
+      username: "{{ keycloak_admin_user }}"
+      password: "{{ keycloak_admin_password }}"
+      realm: master
+      alias: "test"
+      providerId: "oidc"
+      displayName: "Test"
+      state: "absent"
+      force: False
+  register: result
+
+- assert:
+    that:
+      - "result.changed"
+      - "result.stdout == 'deleted'"
+
+- name: Delete an idp (idempotency)
+  keycloak_identity_provider:
+      url: "{{ keycloak_url }}"
+      username: "{{ keycloak_admin_user }}"
+      password: "{{ keycloak_admin_password }}"
+      realm: master
+      alias: "test"
+      providerId: "oidc"
+      displayName: "Test"
+      state: "absent"
+      force: False
+  register: result
+
+- debug:
+    var: result
+
+- assert:
+    that:
+      - "not result.changed"
+      - "result.stdout == 'test absent'"
+
+...

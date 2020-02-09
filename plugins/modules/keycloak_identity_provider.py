@@ -196,7 +196,7 @@ import requests
 import json
 import urllib
 import copy
-from ansible.module_utils.keycloak_utils import *
+from ansible_collections.inspq.keycloak.plugins.module_utils.keycloak_utils import *
     
 def addIdPEndpoints(idPConfiguration, url):
     '''
@@ -243,7 +243,7 @@ def deleteAllMappers(url, bearerHeader):
         mappers = getMappersRequest.json()
         for mapper in mappers:
             requests.delete(url + '/mappers/' + mapper['id'], headers={'Authorization' : bearerHeader})
-    except requests.exceptions.RequestException, ValueError:
+    except requests.exceptions.RequestException as ValueError:
         return False
     except Exception as e:
         raise e
