@@ -1,0 +1,58 @@
+---
+
+- name: create test clients
+  keycloak_client:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    auth_realm: "master"
+    realm: "master"
+    clientId: "{{ item }}"
+    name: "{{ item }}"
+    description: "Ceci est un {{ item }}"
+    adminUrl: "http://{{ item }}.com:8080/admin"
+    baseUrl: "http://{{ item }}.com:8080"
+    enabled: True
+    clientAuthenticatorType: "client-secret"
+    redirectUris: ["http://{{ item }}.com:8080/secure"]
+    webOrigins: ["http://{{ item }}.com:8080/secure"]
+    consentRequired: False
+    standardFlowEnabled: True
+    implicitFlowEnabled: True
+    directAccessGrantsEnabled: True
+    serviceAccountsEnabled: True
+    protocol: "openid-connect"
+    bearerOnly: False
+    publicClient: False
+  loop:
+    - "test1"
+    - "test2"
+
+- name: create a role
+  keycloak_role:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    auth_realm: "master"
+    realm: "master"
+    name: "test_modify_role_two_client_role_with_same_name"
+    description: "Test modify role two client roles with same name"
+    composite: True
+    composites:
+      - name: "admin"
+        clientId: "test2"
+      - name: "manager"
+        clientId: "test2"
+    state: "present"
+  register: result
+
+- debug:
+    var: result
+
+- assert:
+    that:
+#    - result.changed
+    - result.role.name == 'test_modify_role_two_client_role_with_same_name'
+    - result.role.description == 'Test modify role two client roles with same name'
+
+...

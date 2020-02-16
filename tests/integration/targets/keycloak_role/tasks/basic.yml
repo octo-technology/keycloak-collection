@@ -1,0 +1,101 @@
+---
+
+- name: create a role
+  keycloak_role:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    auth_realm: master
+    realm: "master"
+    name: "test_create_role"
+    description: "Test create role"
+    state: "present"
+  register: result
+
+- debug:
+    var: result
+
+- assert:
+    that:
+    - result.changed
+    - result.role.name == 'test_create_role'
+    - result.role.description == 'Test create role'
+
+- name: create a role (idempotency)
+  keycloak_role:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    auth_realm: master
+    realm: "master"
+    name: "test_create_role"
+    description: "Test create role"
+    state: "present"
+  register: result
+
+- debug:
+    var: result
+
+- assert:
+    that:
+    - not result.changed
+    - result.role.name == 'test_create_role'
+    - result.role.description == 'Test create role'
+
+- name: update a role
+  keycloak_role:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    auth_realm: master
+    realm: "master"
+    name: "test_create_role"
+    description: "Test create role modified"
+    state: "present"
+  register: result
+
+- assert:
+    that:
+    - result.changed
+    - result.role.name == 'test_create_role'
+    - result.role.description == 'Test create role modified'
+
+- name: delete a role
+  keycloak_role:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    auth_realm: master
+    realm: "master"
+    name: "test_create_role"
+    state: "absent"
+  register: result
+
+- debug:
+    var: result
+
+- assert:
+    that:
+    - result.changed
+    - result.msg == 'Realm role test_create_role is deleted in realm master'
+
+- name: delete a role (idempotency)
+  keycloak_role:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    auth_realm: master
+    realm: "master"
+    name: "test_create_role"
+    state: "absent"
+  register: result
+
+- debug:
+    var: result
+
+- assert:
+    that:
+    - not result.changed
+    - result.msg == 'Realm role test_create_role is absent in realm master'
+
+...

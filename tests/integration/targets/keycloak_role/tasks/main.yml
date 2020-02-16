@@ -1,0 +1,6 @@
+---
+
+- import_tasks: basic.yml
+#- import_tasks: composite.yml
+
+...
