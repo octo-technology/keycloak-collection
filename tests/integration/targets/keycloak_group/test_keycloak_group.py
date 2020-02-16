@@ -173,139 +173,6 @@ class KeycloakGroupTestCase(ModuleTestCase):
             self.module.main()
         super(KeycloakGroupTestCase, self).tearDown()
         
-    def test_create_group_with_attibutes_dict(self):
-        toCreate = {
-            "auth_username":"admin", 
-            "auth_password":"admin",
-            "realm":"master",
-            "auth_keycloak_url":"http://localhost:18081/auth",
-            "name":"test_create_group_with_attibutes_dict",
-            "attributes": {
-                "attr1":["value1"],
-                "attr2":["value2"]
-            }, 
-            "realmRoles": [
-                "uma_authorization"
-            ], 
-            "clientRoles": [{
-                "clientid": "master-realm",
-                "roles": [
-                    "manage-users",
-                    "view-identity-providers"
-                    ]
-                }
-            ],
-            "state":"present",
-            "force":False
-        }
-
-        self.module = keycloak_group
-        set_module_args(toCreate)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        self.assertTrue(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]["group"]["name"], toCreate["name"], "name: " + results.exception.args[0]["group"]["name"] + " : " + toCreate["name"])
-        self.assertTrue(isDictEquals(toCreate["attributes"],results.exception.args[0]["group"]["attributes"]), "attributes: " + str(results.exception.args[0]["group"]["attributes"]) + " : " + str(toCreate["attributes"]))
-        self.assertTrue(isDictEquals(toCreate["clientRoles"],results.exception.args[0]["group"]["clientRoles"]), "clientRoles: " + str(results.exception.args[0]["group"]["clientRoles"]) + " : " + str(toCreate["clientRoles"]))
-        self.assertTrue(isDictEquals(toCreate["realmRoles"],results.exception.args[0]["group"]["realmRoles"]), "realmRoles: " + str(results.exception.args[0]["group"]["realmRoles"]) + " : " + str(toCreate["realmRoles"]))
-        
-    def test_create_group_with_attributes_list(self):
-        toCreate = {
-            "auth_username":"admin", 
-            "auth_password":"admin",
-            "realm":"master",
-            "auth_keycloak_url":"http://localhost:18081/auth",
-            "name":"test_create_group_with_attributes_list",
-            "attributes": {
-                "attr1":["value1"],
-                "attr2":["value2"]
-            },
-            "attributes_list": [
-                {
-                    "name":"attr1",
-                    "value":["value1"]
-                    },
-                {
-                    "name": "attr2",
-                    "value":["value2"]
-                    }
-            ], 
-            "realmRoles": [
-                "uma_authorization"
-            ], 
-            "clientRoles": [{
-                "clientid": "master-realm",
-                "roles": [
-                    "manage-users",
-                    "view-identity-providers"
-                    ]
-                }
-            ], 
-            "state":"present",
-            "force":False
-        }
-        
-        self.module = keycloak_group
-        set_module_args(toCreate)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        self.assertTrue(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]["group"]["name"], toCreate["name"], "name: " + results.exception.args[0]["group"]["name"] + " : " + toCreate["name"])
-        self.assertTrue(isDictEquals(toCreate["attributes"],results.exception.args[0]["group"]["attributes"]), "attributes: " + str(results.exception.args[0]["group"]["attributes"]) + " : " + str(toCreate["attributes"]))
-        self.assertTrue(isDictEquals(toCreate["clientRoles"],results.exception.args[0]["group"]["clientRoles"]), "clientRoles: " + str(results.exception.args[0]["group"]["clientRoles"]) + " : " + str(toCreate["clientRoles"]))
-        self.assertTrue(isDictEquals(toCreate["realmRoles"],results.exception.args[0]["group"]["realmRoles"]), "realmRoles: " + str(results.exception.args[0]["group"]["realmRoles"]) + " : " + str(toCreate["realmRoles"]))
-
-    def test_create_group_with_attributes_dict_and_attributes_list(self):
-        toCreate = {
-            "auth_username":"admin", 
-            "auth_password":"admin",
-            "realm":"master",
-            "auth_keycloak_url":"http://localhost:18081/auth",
-            "name":"test_create_group_with_attributes_dict_and_attributes_list",
-            "attributes": {
-                "attr1":["value1"],
-                "attr2":["value2"]
-            }, 
-            "attributes_list": [
-                {
-                    "name":"attr3",
-                    "value":["value3"]
-                    },
-                {
-                    "name": "attr4",
-                    "value":["value4"]
-                    }
-            ], 
-            "realmRoles": [
-                "uma_authorization"
-            ], 
-            "clientRoles": [{
-                "clientid": "master-realm",
-                "roles": [
-                    "manage-users",
-                    "view-identity-providers"
-                    ]
-                }
-            ], 
-            "state":"present",
-            "force":False
-        }
-        attributes_dict = {
-                "attr1":["value1"],
-                "attr2":["value2"],
-                "attr3":["value3"],
-                "attr4":["value4"]
-            }
-        
-        self.module = keycloak_group
-        set_module_args(toCreate)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        self.assertTrue(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]["group"]["name"], toCreate["name"], "name: " + results.exception.args[0]["group"]["name"] + " : " + toCreate["name"])
-        self.assertTrue(isDictEquals(attributes_dict,results.exception.args[0]["group"]["attributes"]), "attributes: " + str(results.exception.args[0]["group"]["attributes"]) + " : " + str(attributes_dict))
-        self.assertTrue(isDictEquals(toCreate["clientRoles"],results.exception.args[0]["group"]["clientRoles"]), "clientRoles: " + str(results.exception.args[0]["group"]["clientRoles"]) + " : " + str(toCreate["clientRoles"]))
-        self.assertTrue(isDictEquals(toCreate["realmRoles"],results.exception.args[0]["group"]["realmRoles"]), "realmRoles: " + str(results.exception.args[0]["group"]["realmRoles"]) + " : " + str(toCreate["realmRoles"]))
 
     def test_create_group_with_user_storage_sync(self):
         toCreate = {
@@ -324,16 +191,6 @@ class KeycloakGroupTestCase(ModuleTestCase):
             self.module.main()
         self.assertTrue(results.exception.args[0]['changed'])
 
-    def test_group_not_changed(self):
-        self.module = keycloak_group
-        set_module_args(self.groupNotChanged)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        self.assertFalse(results.exception.args[0]['changed'])
-        self.assertEquals(results.exception.args[0]["group"]["name"], self.groupNotChanged["name"], "name: " + results.exception.args[0]["group"]["name"] + " : " + self.groupNotChanged["name"])
-        self.assertTrue(isDictEquals(self.groupNotChanged["attributes"],results.exception.args[0]["group"]["attributes"]), "attributes: " + str(results.exception.args[0]["group"]["attributes"]) + " : " + str(self.groupNotChanged["attributes"]))
-        self.assertTrue(isDictEquals(self.groupNotChanged["clientRoles"],results.exception.args[0]["group"]["clientRoles"]), "clientRoles: " + str(results.exception.args[0]["group"]["clientRoles"]) + " : " + str(self.groupNotChanged["clientRoles"]))
-        self.assertTrue(isDictEquals(self.groupNotChanged["realmRoles"],results.exception.args[0]["group"]["realmRoles"]), "realmRoles: " + str(results.exception.args[0]["group"]["realmRoles"]) + " : " + str(self.groupNotChanged["realmRoles"]))
 
     def test_group_modify_force(self):
         set_module_args(self.groupModifyForce)
@@ -386,13 +243,3 @@ class KeycloakGroupTestCase(ModuleTestCase):
         self.assertTrue(isDictEquals(newToChange["attributes"], results.exception.args[0]["group"]["attributes"]), "attributes: " + str(results.exception.args[0]["group"]["attributes"]) + " : " + str(newToChange["attributes"]))
         self.assertTrue(isDictEquals(newToChange["clientRoles"], results.exception.args[0]["group"]["clientRoles"]), "clientRoles: " + str(results.exception.args[0]["group"]["clientRoles"]) + " : " + str(newToChange["clientRoles"]))
         self.assertTrue(isDictEquals(newToChange["realmRoles"], results.exception.args[0]["group"]["realmRoles"]), "realmRoles: " + str(results.exception.args[0]["group"]["realmRoles"]) + " : " + str(newToChange["realmRoles"]))
-
-        
-    def test_delete_group(self):
-        toDelete = self.deleteGroup.copy()
-        toDelete["state"] = "absent"
-        set_module_args(toDelete)
-        with self.assertRaises(AnsibleExitJson) as results:
-            self.module.main()
-        self.assertTrue(results.exception.args[0]['changed'])
-        self.assertEqual(results.exception.args[0]['msg'], "Group {name} has been deleted".format(name=toDelete['name']), 'group has been deleted')

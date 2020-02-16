@@ -1,0 +1,154 @@
+---
+
+- name: create a group
+  keycloak_group:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    auth_realm: master
+    realm: "master"
+    name: "test_create_group_with_attibutes_dict"
+    attributes:
+      attr1: ["value1"]
+      attr2: ["value2"]
+    realmRoles:
+    - "uma_authorization"
+    clientRoles:
+    - clientid: "master-realm"
+      roles:
+        - "manage-users"
+        - "view-identity-providers"
+    state: "present"
+  register: result
+
+- assert:
+    that:
+        #    - result.changed
+    - result.group.name == 'test_create_group_with_attibutes_dict'
+    - result.group.access.view
+    - result.group.access.manage
+    - result.group.access.manageMembership
+    - result.group.attributes.attr1 is defined
+    - result.group.attributes.attr1 == ['value1']
+    - result.group.attributes.attr2 is defined
+    - result.group.attributes.attr2 == ['value2']
+    - result.group.clientRoles.0.clientid == 'master-realm'
+    - result.group.clientRoles.0.roles == ['view-identity-providers', 'manage-users']
+
+- name: create a group (idempotency)
+  keycloak_group:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    auth_realm: master
+    realm: "master"
+    name: "test_create_group_with_attibutes_dict"
+    attributes:
+      attr1: ["value1"]
+      attr2: ["value2"]
+    realmRoles:
+    - "uma_authorization"
+    clientRoles:
+    - clientid: "master-realm"
+      roles:
+        - "manage-users"
+        - "view-identity-providers"
+    state: "present"
+  register: result
+
+- assert:
+    that:
+    - not result.changed
+    - result.group.name == 'test_create_group_with_attibutes_dict'
+    - result.group.access.view
+    - result.group.access.manage
+    - result.group.access.manageMembership
+    - result.group.attributes.attr1 is defined
+    - result.group.attributes.attr1 == ['value1']
+    - result.group.attributes.attr2 is defined
+    - result.group.attributes.attr2 == ['value2']
+    - result.group.clientRoles.0.clientid == 'master-realm'
+    - result.group.clientRoles.0.roles == ['view-identity-providers', 'manage-users']
+
+- name: create a group with attributes_list
+  keycloak_group:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    auth_realm: master
+    realm: "master"
+    name: "test_create_group_with_attibutes_dict"
+    attributes:
+      attr1: ["value1"]
+      attr2: ["value2"]
+    attributes_list:
+    - name: "attr1"
+      value: "value1"
+    - name: "attr2"
+      value: "value2"
+    - name: "attr3"
+      value: "value3"
+    realmRoles:
+    - "uma_authorization"
+    clientRoles:
+    - clientid: "master-realm"
+      roles:
+        - "manage-users"
+        - "view-identity-providers"
+    state: "present"
+  register: result
+
+- assert:
+    that:
+    - result.changed
+    - result.group.name == 'test_create_group_with_attibutes_dict'
+    - result.group.access.view
+    - result.group.access.manage
+    - result.group.access.manageMembership
+    - result.group.attributes.attr1 is defined
+    - result.group.attributes.attr1 == ['value1']
+    - result.group.attributes.attr2 is defined
+    - result.group.attributes.attr2 == ['value2']
+    - result.group.attributes.attr3 is defined
+    - result.group.attributes.attr3 == ['value3']
+    - result.group.clientRoles.0.clientid == 'master-realm'
+    - result.group.clientRoles.0.roles == ['view-identity-providers', 'manage-users']
+
+- name: Delete a group
+  keycloak_group:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    auth_realm: master
+    realm: "master"
+    name: "test_create_group_with_attibutes_dict"
+    state: absent
+  register: result
+
+- assert:
+    that:
+    - result.changed
+    - result.group == {}
+    - result.msg == 'Group test_create_group_with_attibutes_dict has been deleted'
+
+# FIXME: Test ldap sync group
+# FIXME: Test forced modify: is it necessary ?
+
+- name: Delete a group (idempotency)
+  keycloak_group:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    auth_realm: master
+    realm: "master"
+    name: "test_create_group_with_attibutes_dict"
+    state: absent
+  register: result
+
+- assert:
+    that:
+    - not result.changed
+    - result.group == {}
+    - result.msg == 'Group does not exist; doing nothing.'
+
+...
