@@ -30,10 +30,9 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 import json
-import urllib
 
 from ansible.module_utils.urls import open_url
-from ansible.module_utils.six.moves.urllib.parse import urlencode
+from ansible.module_utils.six.moves.urllib.parse import urlencode, quote
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible.module_utils._text import to_text
 
@@ -330,7 +329,7 @@ class KeycloakAPI(object):
         """
         clientlist_url = URL_CLIENTS.format(url=self.baseurl, realm=realm)
         if filter is not None:
-            clientlist_url += '?clientId=%s' % urllib.quote(filter)
+            clientlist_url += '?clientId=%s' % quote(filter)
 
         try:
             return json.load(open_url(clientlist_url, method='GET', headers=self.restheaders,
@@ -1473,7 +1472,7 @@ class KeycloakAPI(object):
                 URL_AUTHENTICATION_FLOW_COPY.format(
                     url=self.baseurl,
                     realm=realm,
-                    copyfrom=urllib.quote(config["copyFrom"])),
+                    copyfrom=quote(config["copyFrom"])),
                 method='POST',
                 headers=self.restheaders,
                 data=json.dumps(newName))
@@ -1543,7 +1542,7 @@ class KeycloakAPI(object):
                             URL_AUTHENTICATION_FLOW_EXECUTIONS.format(
                                 url=self.baseurl,
                                 realm=realm,
-                                flowalias=urllib.quote(config["alias"])),
+                                flowalias=quote(config["alias"])),
                             method='GET',
                             headers=self.restheaders))
                     executionFound = False
@@ -1577,7 +1576,7 @@ class KeycloakAPI(object):
                             URL_AUTHENTICATION_FLOW_EXECUTIONS_EXECUTION.format(
                                 url=self.baseurl,
                                 realm=realm,
-                                flowalias=urllib.quote(config["alias"])),
+                                flowalias=quote(config["alias"])),
                             method='POST',
                             headers=self.restheaders,
                             data=json.dumps(newExec))
@@ -1589,7 +1588,7 @@ class KeycloakAPI(object):
                                 URL_AUTHENTICATION_FLOW_EXECUTIONS.format(
                                     url=self.baseurl,
                                     realm=realm,
-                                    flowalias=urllib.quote(config["alias"])),
+                                    flowalias=quote(config["alias"])),
                                 method='GET',
                                 headers=self.restheaders))
                         executionFound = False
@@ -1620,7 +1619,7 @@ class KeycloakAPI(object):
                                 URL_AUTHENTICATION_FLOW_EXECUTIONS.format(
                                     url=self.baseurl,
                                     realm=realm,
-                                    flowalias=urllib.quote(config["alias"])),
+                                    flowalias=quote(config["alias"])),
                                 method='PUT',
                                 headers=self.restheaders,
                                 data=json.dumps(updatedExec))
@@ -1664,7 +1663,7 @@ class KeycloakAPI(object):
                     URL_AUTHENTICATION_FLOW_EXECUTIONS.format(
                         url=self.baseurl,
                         realm=realm,
-                        flowalias=urllib.quote(config["alias"])),
+                        flowalias=quote(config["alias"])),
                     method='GET',
                     headers=self.restheaders))
             for execution in executions:
