@@ -1,0 +1,93 @@
+---
+
+- name: Create a client
+  keycloak_client:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    auth_realm: "master"
+    realm: "master"
+    state: "present"
+    clientId: "basetest"
+    rootUrl: "http://test.com:8080"
+    name: "basetestname"
+    description: "Base testing"
+    publicClient: False
+  register: result
+
+- debug:
+    var: result
+
+- assert:
+    that:
+      - "result.changed"
+      - "result.end_state.name == 'basetestname'"
+      - "result.end_state.clientId == 'basetest'"
+      - "result.end_state.rootUrl == 'http://test.com:8080'"
+      - "result.end_state.description == 'Base testing'"
+      - "not result.end_state.publicClient"
+
+- name: Create a client (idempotency)
+  keycloak_client:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    auth_realm: "master"
+    realm: "master"
+    state: "present"
+    clientId: "basetest"
+    rootUrl: "http://test.com:8080"
+    name: "basetestname"
+    description: "Base testing"
+    publicClient: False
+  register: result
+
+- assert:
+    that:
+      - "not result.changed"
+      - "result.end_state.name == 'basetestname'"
+      - "result.end_state.clientId == 'basetest'"
+      - "result.end_state.rootUrl == 'http://test.com:8080'"
+      - "result.end_state.description == 'Base testing'"
+      - "not result.end_state.publicClient"
+
+#FIXME: add a test that modifies the client
+#FIXME: add a test that modifies the client (confidential<->public)
+#FIXME: add a test that adds roles
+#FIXME: add a test that adds mappers
+#FIXME: add a test that adds scope
+
+- name: Delete a client
+  keycloak_client:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    auth_realm: "master"
+    realm: "master"
+    state: "absent"
+    clientId: "basetest"
+  register: result
+
+- assert:
+    that:
+      - "result.changed"
+      - "result.end_state == {}"
+      - "result.msg == 'Client basetest has been deleted.'"
+
+- name: Delete a client (idempotency)
+  keycloak_client:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    auth_realm: "master"
+    realm: "master"
+    state: "absent"
+    clientId: "basetest"
+  register: result
+
+- assert:
+    that:
+      - "not result.changed"
+      - "result.end_state == {}"
+      - "result.msg == 'Client does not exist, doing nothing.'"
+...

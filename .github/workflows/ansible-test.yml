@@ -70,7 +70,7 @@ jobs:
         run: pip install git+https://github.com/ansible-collection-migration/ansible-base.git --disable-pip-version-check
 
       - name: Run integration tests on Python ${{ matrix.python_version }}
-        run: ansible-test integration keycloak_realm -v --color --retry-on-error --python ${{ matrix.python_version }} --continue-on-error --diff #--coverage
+        run: ansible-test integration -v --color --retry-on-error --python ${{ matrix.python_version }} --continue-on-error --diff #--coverage
 
         #      - name: Upload Coverage data
         #        run: tests/coverage.sh
