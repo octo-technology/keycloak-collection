@@ -1,0 +1,294 @@
+---
+
+- import_tasks: pre-requisites.yml
+
+- name: create keycloak user
+  keycloak_user:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    username: "createuser"
+    firstName: "Create"
+    lastName: "User"
+    email: "user1@user.ca"
+    enabled: True
+    emailVerified: False
+    credentials:
+    - temporary: false
+      type: "password"
+      value: "password"
+    clientRoles:
+    - clientId: "master-realm"
+      roles: ["manage-clients"]
+    realmRoles:
+    - "testUserRole1"
+    - "testUserRole2"
+    attributes:
+      attr1: ["value1"]
+      attr2: ["value2"]
+    groups:
+    - "testUserGroup1"
+    - "testUserGroup2"
+    state: "present"
+  register: result
+
+- assert:
+    that:
+    - "result.changed"
+    - "result.user.username == 'createuser'"
+    - "result.user.firstName == 'Create'"
+    - "result.user.lastName == 'User'"
+    - "result.user.email == 'user1@user.ca'"
+    - "result.user.enabled"
+    - "not result.user.emailVerified"
+    - "result.user.clientRoles.0.clientId == 'master-realm'"
+    - "'manage-clients' in result.user.clientRoles.0.roles"
+    - "'testUserRole1' in result.user.realmRoles"
+    - "'testUserRole2' in result.user.realmRoles"
+    - "result.user.attributes.attr1.0 == 'value1'"
+    - "result.user.attributes.attr2.0 == 'value2'"
+    - "result.user.groups.0 == 'testUserGroup1'"
+    - "result.user.groups.1 == 'testUserGroup2'"
+
+- name: create keycloak user (idempotency)
+  keycloak_user:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    username: "createuser"
+    firstName: "Create"
+    lastName: "User"
+    email: "user1@user.ca"
+    enabled: True
+    emailVerified: False
+    credentials:
+    - temporary: false
+      type: "password"
+      value: "password"
+    clientRoles:
+    - clientId: "master-realm"
+      roles: ["manage-clients"]
+    realmRoles:
+    - "testUserRole1"
+    - "testUserRole2"
+    attributes:
+      attr1: ["value1"]
+      attr2: ["value2"]
+    groups:
+    - "testUserGroup1"
+    - "testUserGroup2"
+    state: "present"
+  register: result
+
+- assert:
+    that:
+    - "not result.changed"
+    - "result.user.username == 'createuser'"
+    - "result.user.firstName == 'Create'"
+    - "result.user.lastName == 'User'"
+    - "result.user.email == 'user1@user.ca'"
+    - "result.user.enabled"
+    - "not result.user.emailVerified"
+    - "result.user.clientRoles.0.clientId == 'master-realm'"
+    - "'manage-clients' in result.user.clientRoles.0.roles"
+    - "'testUserRole1' in result.user.realmRoles"
+    - "'testUserRole2' in result.user.realmRoles"
+    - "result.user.attributes.attr1.0 == 'value1'"
+    - "result.user.attributes.attr2.0 == 'value2'"
+    - "result.user.groups.0 == 'testUserGroup1'"
+    - "result.user.groups.1 == 'testUserGroup2'"
+
+- name: Modify keycloak user
+  keycloak_user:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    username: "createuser"
+    firstName: "Create"
+    lastName: "Modified"
+    email: "user1@user.ca"
+    enabled: True
+    emailVerified: False
+    credentials:
+    - temporary: false
+      type: "password"
+      value: "password"
+    clientRoles:
+    - clientId: "master-realm"
+      roles: ["manage-clients", "query-groups"]
+    realmRoles:
+    - "testUserRole1"
+    - "testUserRole2"
+    attributes:
+      attr1: ["value1"]
+      attr2: ["value2"]
+    groups:
+    - "testUserGroup1"
+    - "testUserGroup2"
+    state: "present"
+  register: result
+
+- assert:
+    that:
+    - "result.changed"
+    - "result.user.username == 'createuser'"
+    - "result.user.firstName == 'Create'"
+    - "result.user.lastName == 'Modified'"
+    - "result.user.email == 'user1@user.ca'"
+    - "result.user.enabled"
+    - "not result.user.emailVerified"
+    - "result.user.clientRoles.0.clientId == 'master-realm'"
+    - "result.user.clientRoles.0.roles | sort == ['manage-clients', 'query-groups']"
+    - "'testUserRole1' in result.user.realmRoles"
+    - "'testUserRole2' in result.user.realmRoles"
+    - "result.user.attributes.attr1.0 == 'value1'"
+    - "result.user.attributes.attr2.0 == 'value2'"
+    - "result.user.groups.0 == 'testUserGroup1'"
+    - "result.user.groups.1 == 'testUserGroup2'"
+
+- name: Delete keycloak user
+  keycloak_user:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    username: "createuser"
+    state: "absent"
+  register: result
+
+- assert:
+    that:
+    - result.changed
+    - result.user == {}
+
+- name: Delete keycloak user (idempotency)
+  keycloak_user:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    username: "createuser"
+    state: "absent"
+  register: result
+
+- assert:
+    that:
+    - not result.changed
+    - result.user == {}
+
+- name: create keycloak user without client role and realm role
+  keycloak_user:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    username: "createuser"
+    firstName: "Create"
+    lastName: "User"
+    email: "user1@user.ca"
+    enabled: True
+    emailVerified: False
+    credentials:
+    - temporary: false
+      type: "password"
+      value: "password"
+    attributes:
+      attr1: ["value1"]
+      attr2: ["value2"]
+    groups:
+    - "testUserGroup1"
+    - "testUserGroup2"
+    state: "present"
+  register: result
+
+- assert:
+    that:
+    - "result.changed"
+    - "result.user.username == 'createuser'"
+    - "result.user.firstName == 'Create'"
+    - "result.user.lastName == 'User'"
+    - "result.user.email == 'user1@user.ca'"
+    - "result.user.enabled"
+    - "not result.user.emailVerified"
+    - "result.user.attributes.attr1.0 == 'value1'"
+    - "result.user.attributes.attr2.0 == 'value2'"
+    - "result.user.groups.0 == 'testUserGroup1'"
+    - "result.user.groups.1 == 'testUserGroup2'"
+
+- name: create keycloak user with client role that does not exists
+  keycloak_user:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    username: "createuser"
+    firstName: "Create"
+    lastName: "User"
+    email: "user1@user.ca"
+    enabled: True
+    emailVerified: False
+    credentials:
+    - temporary: false
+      type: "password"
+      value: "password"
+    clientRoles:
+    - clientId: "i-dont-exists"
+      roles: ["manage-clients"]
+    realmRoles:
+    - "testUserRole1"
+    - "testUserRole2"
+    attributes:
+      attr1: ["value1"]
+      attr2: ["value2"]
+    groups:
+    - "testUserGroup1"
+    - "testUserGroup2"
+    state: "present"
+  ignore_errors: true
+  register: result
+
+- assert:
+    that:
+    - result.failed
+    - result.msg is match(".*client i-dont-exists not found")
+
+- name: create keycloak user with client role with spaces
+  keycloak_user:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    username: "createuser"
+    firstName: "Create"
+    lastName: "User"
+    email: "user1@user.ca"
+    enabled: True
+    emailVerified: False
+    credentials:
+    - temporary: false
+      type: "password"
+      value: "password"
+    clientRoles:
+    - clientId: "i dont exists"
+      roles: ["manage-clients"]
+    realmRoles:
+    - "testUserRole1"
+    - "testUserRole2"
+    attributes:
+      attr1: ["value1"]
+      attr2: ["value2"]
+    groups:
+    - "testUserGroup1"
+    - "testUserGroup2"
+    state: "present"
+  ignore_errors: true
+  register: result
+
+- assert:
+    that:
+    - result.failed
+    - result.msg is match(".*client i dont exists not found")
+...

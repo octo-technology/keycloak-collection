@@ -1,0 +1,7 @@
+---
+
+keycloak_url: "http://keycloak:8080/auth"
+keycloak_admin_user: "admin"
+keycloak_admin_password: "admin"
+
+...
