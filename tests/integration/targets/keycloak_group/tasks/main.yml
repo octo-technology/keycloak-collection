@@ -23,17 +23,17 @@
 
 - assert:
     that:
-        #    - result.changed
-    - result.group.name == 'test_create_group_with_attibutes_dict'
-    - result.group.access.view
-    - result.group.access.manage
-    - result.group.access.manageMembership
-    - result.group.attributes.attr1 is defined
-    - result.group.attributes.attr1 == ['value1']
-    - result.group.attributes.attr2 is defined
-    - result.group.attributes.attr2 == ['value2']
-    - result.group.clientRoles.0.clientid == 'master-realm'
-    - result.group.clientRoles.0.roles == ['view-identity-providers', 'manage-users']
+    - "result.changed"
+    - "result.group.name == 'test_create_group_with_attibutes_dict'"
+    - "result.group.access.view"
+    - "result.group.access.manage"
+    - "result.group.access.manageMembership"
+    - "result.group.attributes.attr1 is defined"
+    - "result.group.attributes.attr1 == ['value1']"
+    - "result.group.attributes.attr2 is defined"
+    - "result.group.attributes.attr2 == ['value2']"
+    - "result.group.clientRoles.0.clientid == 'master-realm'"
+    - "result.group.clientRoles.0.roles | sort == ['manage-users', 'view-identity-providers']"
 
 - name: create a group (idempotency)
   keycloak_group:
@@ -58,17 +58,17 @@
 
 - assert:
     that:
-    - not result.changed
-    - result.group.name == 'test_create_group_with_attibutes_dict'
-    - result.group.access.view
-    - result.group.access.manage
-    - result.group.access.manageMembership
-    - result.group.attributes.attr1 is defined
-    - result.group.attributes.attr1 == ['value1']
-    - result.group.attributes.attr2 is defined
-    - result.group.attributes.attr2 == ['value2']
-    - result.group.clientRoles.0.clientid == 'master-realm'
-    - result.group.clientRoles.0.roles == ['view-identity-providers', 'manage-users']
+    - "not result.changed"
+    - "result.group.name == 'test_create_group_with_attibutes_dict'"
+    - "result.group.access.view"
+    - "result.group.access.manage"
+    - "result.group.access.manageMembership"
+    - "result.group.attributes.attr1 is defined"
+    - "result.group.attributes.attr1 == ['value1']"
+    - "result.group.attributes.attr2 is defined"
+    - "result.group.attributes.attr2 == ['value2']"
+    - "result.group.clientRoles.0.clientid == 'master-realm'"
+    - "result.group.clientRoles.0.roles | sort == ['manage-users', 'view-identity-providers']"
 
 - name: create a group with attributes_list
   keycloak_group:
@@ -100,19 +100,19 @@
 
 - assert:
     that:
-    - result.changed
-    - result.group.name == 'test_create_group_with_attibutes_dict'
-    - result.group.access.view
-    - result.group.access.manage
-    - result.group.access.manageMembership
-    - result.group.attributes.attr1 is defined
-    - result.group.attributes.attr1 == ['value1']
-    - result.group.attributes.attr2 is defined
-    - result.group.attributes.attr2 == ['value2']
-    - result.group.attributes.attr3 is defined
-    - result.group.attributes.attr3 == ['value3']
-    - result.group.clientRoles.0.clientid == 'master-realm'
-    - result.group.clientRoles.0.roles == ['view-identity-providers', 'manage-users']
+    - "result.changed"
+    - "result.group.name == 'test_create_group_with_attibutes_dict'"
+    - "result.group.access.view"
+    - "result.group.access.manage"
+    - "result.group.access.manageMembership"
+    - "result.group.attributes.attr1 is defined"
+    - "result.group.attributes.attr1 == ['value1']"
+    - "result.group.attributes.attr2 is defined"
+    - "result.group.attributes.attr2 == ['value2']"
+    - "result.group.attributes.attr3 is defined"
+    - "result.group.attributes.attr3 == ['value3']"
+    - "result.group.clientRoles.0.clientid == 'master-realm'"
+    - "result.group.clientRoles.0.roles | sort == ['manage-users', 'view-identity-providers']"
 
 - name: Delete a group
   keycloak_group:
