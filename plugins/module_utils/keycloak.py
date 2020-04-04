@@ -134,14 +134,17 @@ def remove_arguments_with_value_none(argument):
     :return: nothing
     """
     if type(argument) is dict:
+        keys_to_remove = []
         for key in argument.keys():
             if argument[key] is None:
-                del argument[key]
+                keys_to_remove.append(key)
             elif type(argument[key]) is list:
                 for element in argument[key]:
                     remove_arguments_with_value_none(element)
             elif type(argument[key]) is dict:
                 remove_arguments_with_value_none(argument[key])
+        for item in keys_to_remove:
+            argument.pop(item)
 
 
 def isDictEquals(dict1, dict2, exclude=None):

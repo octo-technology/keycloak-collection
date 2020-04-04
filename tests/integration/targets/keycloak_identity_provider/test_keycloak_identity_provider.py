@@ -552,6 +552,7 @@ class KeycloakIdentityProviderTestCase(ModuleTestCase):
                     self.assertDictEqual(mapper["config"], mapperToChange["config"], "config: " + str(mapper["config"]) + "not equal " + str(mapperToChange["config"]))
             self.assertTrue(mapperFound, "mapper " + mapperToChange["name"] + " not found")  
 
+    # RRE
     def test_modify_idp_remove_mappers(self):
         toChange = self.testIDPs[5].copy()
         toChange["mappers"][1]["state"] = "absent"

@@ -1,0 +1,279 @@
+---
+
+- name: Create an idp
+  keycloak_identity_provider:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    alias: "my_idp"
+    providerId: "oidc"
+    displayName: "test_create_idp"
+    enabled: True
+    updateProfileFirstLoginMode: "on"
+    trustEmail: False
+    storeToken: True
+    addReadTokenRoleOnCreate: True
+    authenticateByDefault: False
+    linkOnly: False
+    firstBrokerLoginFlowAlias: "first broker login"
+    config:
+       openIdConfigurationUrl: "{{ keycloak_url }}/realms/master/.well-known/openid-configuration"
+       clientId: "test"
+       defaultScope: "openid email profile"
+       disableUserInfo: "false"
+       guiOrder: "1"
+       backchannelSupported: "false"
+    mappers:
+    - name: "test"
+      identityProviderMapper: "oidc-user-attribute-idp-mapper"
+      config:
+        claim: "test"
+        user.attribute: "lastname"
+    - name: "test2"
+      identityProviderMapper: "oidc-user-attribute-idp-mapper"
+      config:
+        claim: "test2"
+        user.attribute: "firstname"
+    - name: "test3"
+      identityProviderMapper: "oidc-role-idp-mapper"
+      config:
+        claim: "claimName"
+        claim.value: "valueThatGiveRole"
+        role: "roleName"
+    state: "present"
+  register: result
+
+- assert:
+    that:
+        - "result.changed"
+        - "result.idp.enabled"
+        - "result.idp.alias == 'my_idp'"
+        - "result.idp.config.clientId == 'test'"
+        - "result.idp.config.guiOrder == '1'"
+        - "'test' in result.mappers | map(attribute='name') | list"
+        - "'test2' in result.mappers | map(attribute='name') | list"
+        - "'test3' in result.mappers | map(attribute='name') | list"
+
+- name: Create an idp (idempotency)
+  keycloak_identity_provider:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    alias: "my_idp"
+    providerId: "oidc"
+    displayName: "test_create_idp"
+    enabled: True
+    updateProfileFirstLoginMode: "on"
+    trustEmail: False
+    storeToken: True
+    addReadTokenRoleOnCreate: True
+    authenticateByDefault: False
+    linkOnly: False
+    firstBrokerLoginFlowAlias: "first broker login"
+    config:
+       openIdConfigurationUrl: "{{ keycloak_url }}/realms/master/.well-known/openid-configuration"
+       clientId: "test"
+       defaultScope: "openid email profile"
+       disableUserInfo: "false"
+       guiOrder: "1"
+       backchannelSupported: "false"
+    mappers:
+    - name: "test"
+      identityProviderMapper: "oidc-user-attribute-idp-mapper"
+      config:
+        claim: "test"
+        user.attribute: "lastname"
+    - name: "test2"
+      identityProviderMapper: "oidc-user-attribute-idp-mapper"
+      config:
+        claim: "test2"
+        user.attribute: "firstname"
+    - name: "test3"
+      identityProviderMapper: "oidc-role-idp-mapper"
+      config:
+        claim: "claimName"
+        claim.value: "valueThatGiveRole"
+        role: "roleName"
+    state: "present"
+  register: result
+
+- assert:
+    that:
+        - "not result.changed"
+        - "result.idp.enabled"
+        - "result.idp.alias == 'my_idp'"
+        - "result.idp.config.clientId == 'test'"
+        - "result.idp.config.guiOrder == '1'"
+        - "'test' in result.mappers | map(attribute='name') | list"
+        - "'test2' in result.mappers | map(attribute='name') | list"
+        - "'test3' in result.mappers | map(attribute='name') | list"
+
+- name: Test idempotency with display_name removed
+  keycloak_identity_provider:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    alias: "my_idp"
+    providerId: "oidc"
+    enabled: True
+    updateProfileFirstLoginMode: "on"
+    trustEmail: False
+    storeToken: True
+    addReadTokenRoleOnCreate: True
+    authenticateByDefault: False
+    linkOnly: False
+    firstBrokerLoginFlowAlias: "first broker login"
+    config:
+       openIdConfigurationUrl: "{{ keycloak_url }}/realms/master/.well-known/openid-configuration"
+       clientId: "test"
+       defaultScope: "openid email profile"
+       disableUserInfo: "false"
+       guiOrder: "1"
+       backchannelSupported: "false"
+    mappers:
+    - name: "test"
+      identityProviderMapper: "oidc-user-attribute-idp-mapper"
+      config:
+        claim: "test"
+        user.attribute: "lastname"
+    - name: "test2"
+      identityProviderMapper: "oidc-user-attribute-idp-mapper"
+      config:
+        claim: "test2"
+        user.attribute: "firstname"
+    - name: "test3"
+      identityProviderMapper: "oidc-role-idp-mapper"
+      config:
+        claim: "claimName"
+        claim.value: "valueThatGiveRole"
+        role: "roleName"
+    state: "present"
+  register: result
+
+- assert:
+    that:
+        - "not result.changed"
+        - "result.idp.displayName == 'test_create_idp'"
+        - "result.idp.enabled"
+        - "result.idp.alias == 'my_idp'"
+        - "result.idp.config.clientId == 'test'"
+        - "result.idp.config.guiOrder == '1'"
+        - "'test' in result.mappers | map(attribute='name') | list"
+        - "'test2' in result.mappers | map(attribute='name') | list"
+        - "'test3' in result.mappers | map(attribute='name') | list"
+
+- name: Modify an idp
+  keycloak_identity_provider:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    alias: "my_idp"
+    providerId: "oidc"
+    storeToken: False
+    firstBrokerLoginFlowAlias: "registration"
+    config:
+       openIdConfigurationUrl: "{{ keycloak_url }}/realms/master/.well-known/openid-configuration"
+       clientId: "test2"
+       defaultScope: "openid email profile"
+       disableUserInfo: "false"
+       guiOrder: "2"
+    state: "present"
+  register: result
+
+- assert:
+    that:
+        - "result.changed"
+        - "result.idp.alias == 'my_idp'"
+        - "not result.idp.storeToken"
+        - "result.idp.config.guiOrder == '2'"
+        - "result.idp.firstBrokerLoginFlowAlias == 'registration'"
+
+- name: test force option
+  keycloak_identity_provider:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    alias: "my_idp"
+    providerId: "oidc"
+    displayName: "Test the force option for modify"
+    enabled: True
+    updateProfileFirstLoginMode: "on"
+    trustEmail: False
+    storeToken: False
+    addReadTokenRoleOnCreate: True
+    authenticateByDefault: False
+    linkOnly: False
+    firstBrokerLoginFlowAlias: "first broker login"
+    config:
+       openIdConfigurationUrl: "{{ keycloak_url }}/realms/master/.well-known/openid-configuration"
+       clientId: "test2"
+       defaultScope: "openid email profile"
+       disableUserInfo: "false"
+       guiOrder: "1"
+       backchannelSupported: "true"
+    mappers:
+    - name: "test21"
+      identityProviderMapper: "oidc-user-attribute-idp-mapper"
+      config:
+         claim : "test"
+         user.attribute: "lastname"
+    - name: "test22"
+      identityProviderMapper: "oidc-user-attribute-idp-mapper"
+      config:
+         claim: "test2"
+         user.attribute: "firstname"
+    - name: "test23"
+      identityProviderMapper: "oidc-role-idp-mapper"
+      config:
+         claim: "claimName"
+         claim.value: "valueThatGiveRole"
+         role: "roleName"
+    state: "present"
+    force: True
+  register: result
+
+- assert:
+    that:
+        - "result.changed"
+        - "result.idp.alias == 'my_idp'"
+        - "result.idp.firstBrokerLoginFlowAlias == 'first broker login'"
+        - "result.idp.config.guiOrder == '1'"
+
+- name: delete an idp
+  keycloak_identity_provider:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    alias: "my_idp"
+    state: "absent"
+  register: result
+
+- assert:
+    that:
+        - "result.changed"
+        - "result.idp == {}"
+        - "result.msg == 'IdP my_idp is deleted'"
+
+- name: delete an idp
+  keycloak_identity_provider:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    alias: "my_idp"
+    state: "absent"
+  register: result
+
+- assert:
+    that:
+        - "not result.changed"
+        - "result.idp == {}"
+        - "result.msg == 'my_idp absent'"
+
+...
