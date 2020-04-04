@@ -56,11 +56,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        keycloak_version: ["8.0.2", "9.0.2"]
         python_version: ["2.7"]
     container: python:${{ matrix.python_version }}
     services:
       keycloak:
-          image: jboss/keycloak
+          image: jboss/keycloak:${{ matrix.keycloak_version }}
           options: -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin
     steps:
       - name: Check out code
