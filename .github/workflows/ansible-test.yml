@@ -1,6 +1,9 @@
 name: ansible-test
 on:
-- pull_request
+  push:
+    branches:
+      - master
+  pull_request:
 
 jobs:
     #  sanity:
@@ -40,11 +43,15 @@ jobs:
         run: pip install git+https://github.com/ansible-collection-migration/ansible-base.git --disable-pip-version-check
 
       - name: Run unit tests
-        run: ansible-test units --docker -v --color --python 2.7 #--coverage
+        run: ansible-test units --docker -v --color --python 2.7 --coverage
 
-        #      - name: Upload Coverage data
-        #        run: tests/coverage.sh
-        #
+      - name: Generate coverage report.
+        run: ansible-test coverage xml -v --requirements --group-by command --group-by version
+
+      - uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: false
+
   integration:
     runs-on: ubuntu-latest
     strategy:
@@ -66,11 +73,18 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
 
+      - name: Install deps
+        run: pip install coverage
+
       - name: Install ansible-base
         run: pip install git+https://github.com/ansible-collection-migration/ansible-base.git --disable-pip-version-check
 
       - name: Run integration tests on Python ${{ matrix.python_version }}
-        run: ansible-test integration -v --color --retry-on-error --python ${{ matrix.python_version }} --continue-on-error --diff #--coverage
+        run: ansible-test integration -v --color --retry-on-error --python ${{ matrix.python_version }} --continue-on-error --diff --coverage
 
-        #      - name: Upload Coverage data
-        #        run: tests/coverage.sh
+      - name: Generate coverage report.
+        run: ansible-test coverage xml -v --requirements --group-by command --group-by version
+
+      - uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: false
