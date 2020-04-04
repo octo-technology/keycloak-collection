@@ -1,0 +1,204 @@
+---
+
+- name: Create an authentication flow copy
+  keycloak_authentication:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    alias: "Test create authentication flow copy"
+    copyFrom: "first broker login"
+    authenticationExecutions:
+    - providerId: "identity-provider-redirector"
+      requirement: "ALTERNATIVE"
+      authenticationConfig:
+        alias: "name"
+        config:
+          defaultProvider: "value"
+    state: "present"
+  register: result
+
+- assert:
+    that:
+        - "result.changed"
+        - "result.flow.alias == 'Test create authentication flow copy'"
+        - "result.flow.authenticationExecutions.0.providerId == 'identity-provider-redirector'"
+        - "result.flow.authenticationExecutions.0.requirement == 'ALTERNATIVE'"
+        - "result.flow.authenticationExecutions.0.authenticationConfig.alias == 'name'"
+        - "result.flow.authenticationExecutions.0.authenticationConfig.config.defaultProvider == 'value'"
+
+- name: Create an authentication flow copy (idempotency)
+  keycloak_authentication:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    alias: "Test create authentication flow copy"
+    copyFrom: "first broker login"
+    authenticationExecutions:
+    - providerId: "identity-provider-redirector"
+      requirement: "ALTERNATIVE"
+      authenticationConfig:
+        alias: "name"
+        config:
+          defaultProvider: "value"
+    state: "present"
+  register: result
+
+- assert:
+    that:
+        - "not result.changed"
+        - "result.flow.alias == 'Test create authentication flow copy'"
+        - "result.flow.authenticationExecutions.0.providerId == 'identity-provider-redirector'"
+        - "result.flow.authenticationExecutions.0.requirement == 'ALTERNATIVE'"
+        - "result.flow.authenticationExecutions.0.authenticationConfig.alias == 'name'"
+        - "result.flow.authenticationExecutions.0.authenticationConfig.config.defaultProvider == 'value'"
+
+- name: "Test create authentication flow set update profile on first login"
+  keycloak_authentication:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    alias: "Test create authentication flow set update profile on first login"
+    copyFrom: "first broker login"
+    authenticationExecutions:
+    - providerId: "idp-review-profile"
+      requirement: "REQUIRED"
+      authenticationConfig:
+        alias: "New review profile config"
+        config:
+          update.profile.on.first.login: "on"
+    state: "present"
+  register: result
+
+- assert:
+    that:
+        - "result.changed"
+        - "result.flow.alias == 'Test create authentication flow set update profile on first login'"
+        - "result.flow.authenticationExecutions.0.providerId == 'idp-review-profile'"
+        - "result.flow.authenticationExecutions.0.requirement == 'REQUIRED'"
+        - "result.flow.authenticationExecutions.0.authenticationConfig.alias == 'New review profile config'"
+        - "result.flow.authenticationExecutions.0.authenticationConfig.config['update.profile.on.first.login'] == 'on'"
+
+- name: Test create authentication flow without copy
+  keycloak_authentication:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    alias: "Test create authentication flow without copy"
+    providerId: "basic-flow"
+    authenticationExecutions:
+    - providerId: "identity-provider-redirector"
+      requirement: "ALTERNATIVE"
+      authenticationConfig:
+        alias: "name"
+        config:
+          defaultProvider: "value"
+    state: "present"
+  register: result
+
+- debug:
+    var: result
+
+- assert:
+    that:
+        - "result.changed"
+        - "result.flow.alias == 'Test create authentication flow without copy'"
+        - "result.flow.providerId == 'basic-flow'"
+        - "result.flow.authenticationExecutions.0.requirement == 'ALTERNATIVE'"
+        - "result.flow.authenticationExecutions.0.authenticationConfig.alias == 'name'"
+        - "result.flow.authenticationExecutions.0.authenticationConfig.config.defaultProvider == 'value'"
+
+- name: Update authentication by adding execution
+  keycloak_authentication:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    alias: "Test create authentication flow without copy"
+    providerId: "basic-flow"
+    authenticationExecutions:
+    - providerId: "identity-provider-redirector"
+      requirement: "ALTERNATIVE"
+      authenticationConfig:
+        alias: "name"
+        config:
+          defaultProvider: "value"
+    - providerId: "auth-conditional-otp-form"
+      requirement: "ALTERNATIVE"
+      authenticationConfig:
+        alias: "test-conditional-otp"
+        config:
+          skipOtpRole: "admin"
+          forceOtpRole: "broker.read-token"
+          defaultOtpOutcome: "skip"
+    state: "present"
+  register: result
+
+- debug:
+    var: result
+
+- assert:
+    that:
+        - "result.changed"
+        - "result.flow.alias == 'Test create authentication flow without copy'"
+        - "result.flow.providerId == 'basic-flow'"
+        - "result.flow.authenticationExecutions.0.requirement == 'ALTERNATIVE'"
+        - "result.flow.authenticationExecutions.0.authenticationConfig.alias == 'name'"
+        - "result.flow.authenticationExecutions.0.authenticationConfig.config.defaultProvider == 'value'"
+        - "result.flow.authenticationExecutions.1.providerId == 'auth-conditional-otp-form'"
+        - "result.flow.authenticationExecutions.1.requirement == 'ALTERNATIVE'"
+        - "result.flow.authenticationExecutions.1.authenticationConfig.alias == 'test-conditional-otp'"
+
+- name: Delete authentication flow
+  keycloak_authentication:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    alias: "Test create authentication flow copy"
+    copyFrom: "first broker login"
+    authenticationExecutions:
+    - providerId: "identity-provider-redirector"
+      requirement: "ALTERNATIVE"
+      authenticationConfig:
+        alias: "name"
+        config:
+          defaultProvider: "value"
+    state: "absent"
+  register: result
+
+- debug:
+    var: result
+
+- assert:
+    that:
+        - "result.changed"
+
+- name: Delete authentication flow (idempotency)
+  keycloak_authentication:
+    auth_keycloak_url: "{{ keycloak_url }}"
+    auth_username: "{{ keycloak_admin_user }}"
+    auth_password: "{{ keycloak_admin_password }}"
+    realm: "master"
+    alias: "Test create authentication flow copy"
+    copyFrom: "first broker login"
+    authenticationExecutions:
+    - providerId: "identity-provider-redirector"
+      requirement: "ALTERNATIVE"
+      authenticationConfig:
+        alias: "name"
+        config:
+          defaultProvider: "value"
+    state: "absent"
+  register: result
+
+- debug:
+    var: result
+
+- assert:
+    that:
+        - "not result.changed"
+...
