@@ -1,7 +1,7 @@
 # Keycloak Collection for Ansible
 
 ![](https://github.com/octo-technology/keycloak-collection/workflows/ansible-test/badge.svg?branch=master)
-[![Codecov](https://img.shields.io/codecov/c/github/octo-technology/keycloak-collection)](https://codecov.io/gh/octo-technology/keycloak-collection)
+[![codecov](https://codecov.io/gh/octo-technology/keycloak-collection/branch/master/graph/badge.svg)](https://codecov.io/gh/octo-technology/keycloak-collection)
 
 This repo hosts the `inspq.keycloak` Ansible Collection.
 
